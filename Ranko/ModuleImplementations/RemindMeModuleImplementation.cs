@@ -1,4 +1,6 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
 using Ranko.Modules;
 using Ranko.Services;
 using System;
@@ -14,9 +16,15 @@ namespace Ranko.ModuleImplementations
         { }
 
         [Command("test", RunMode = RunMode.Async)]
-        public override Task licz()
+        public override Task SetAdminRoles(params SocketRole[] roles)
         {
-            return base.licz();
+            if (roles == null)
+            {
+                ReplyAsync("abc");
+                return Task.CompletedTask ;
+            }
+            else
+                return base.SetAdminRoles(roles);
         }
     }
 }

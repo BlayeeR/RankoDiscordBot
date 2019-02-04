@@ -1,4 +1,6 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
 using Ranko.Services;
 using System;
 using System.Collections.Generic;
@@ -17,9 +19,9 @@ namespace Ranko.Modules
             _service = service;
         }
 
-        public virtual Task licz()
+        public virtual Task SetAdminRoles(params SocketRole[] roles)
         {
-            return _service.licz(Context.Guild, Context.Channel);
+            return _service.SetAdminRoles(Context.Guild, roles);
         }
 
     }
