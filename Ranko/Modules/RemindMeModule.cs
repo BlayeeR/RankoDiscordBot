@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Ranko.Preconditions;
 using Ranko.Services;
 using System;
 using System.Collections.Generic;
@@ -19,10 +20,19 @@ namespace Ranko.Modules
             _service = service;
         }
 
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
         public virtual Task SetAdminRoles(params SocketRole[] roles)
         {
             return _service.SetAdminRoles(Context.Guild, roles);
         }
 
+        [RequireAdminRole(Group = "Permission")]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        public virtual Task Test()
+        {
+            return _service.Test();
+        }
     }
 }

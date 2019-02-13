@@ -325,7 +325,7 @@ namespace Ranko
                 {
                     CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
                 }
-                return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.AdminRoles.Select(y => y.RoleId).First()).ToList();
+                return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.AdminRoles.Select(y => y.RoleId).FirstOrDefault()).ToList();
             }
         }
 

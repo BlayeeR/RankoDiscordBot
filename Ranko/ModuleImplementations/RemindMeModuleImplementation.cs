@@ -20,11 +20,20 @@ namespace Ranko.ModuleImplementations
         {
             if (roles == null)
             {
-                ReplyAsync("abc");
-                return Task.CompletedTask ;
+                return Task.CompletedTask;
             }
             else
+            {
+                ReplyAsync("abc");
                 return base.SetAdminRoles(roles);
+            }
+        }
+
+        [Command("test2", RunMode = RunMode.Async)]
+        public override Task Test()
+        {
+            return ReplyAsync("abc");
+
         }
     }
 }
