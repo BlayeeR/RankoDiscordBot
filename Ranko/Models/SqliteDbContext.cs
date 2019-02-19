@@ -10,6 +10,7 @@ namespace Ranko.Resources.Database
     {
         public DbSet<GuildConfigEntity> GuildConfig { get; set; }
         public DbSet<TaskEntity> Tasks { get; set; }
+        public DbSet<AdminRoleEntity> AdminRoles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder Options)
         {

@@ -63,7 +63,7 @@ namespace Ranko.Services
         private async Task JoinedGuild(SocketGuild guild)
         {
             SqliteDbHandler.GetLanguageId(guild);
-            await guild.DefaultChannel.SendMessageAsync("test");
+            //await guild.DefaultChannel.SendMessageAsync("test");
         }
 
         private async Task LeftGuild(SocketGuild guild)
@@ -142,6 +142,25 @@ namespace Ranko.Services
         {
             await SqliteDbHandler.SetAdminRoles(guild, roles);
         }
+
+        internal async Task AddAdminRoles(IGuild guild, IRole[] roles)
+        {
+            await SqliteDbHandler.AddAdminRoles(guild, roles);
+        }
+
+        internal async Task RemoveAdminRoles(IGuild guild, IRole[] roles)
+        {
+            await SqliteDbHandler.RemoveAdminRoles(guild, roles);
+        }
+
+        internal List<SocketRole> GetAdminRoles(IGuild guild)
+        {
+            List<SocketRole> roles = new List<SocketRole>();
+            foreach (ulong roleId in SqliteDbHandler.GetAdminRoles(guild))
+                roles.Add(guild.Roles.Where(x => x.Id == roleId).FirstOrDefault() as SocketRole);
+            return roles;
+        }
+
         internal async Task Test()
         {
             

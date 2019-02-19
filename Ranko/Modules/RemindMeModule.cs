@@ -27,6 +27,30 @@ namespace Ranko.Modules
             return _service.SetAdminRoles(Context.Guild, roles);
         }
 
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        public virtual Task AddAdminRoles(params SocketRole[] roles)
+        {
+            return _service.AddAdminRoles(Context.Guild, roles);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        public virtual Task RemoveAdminRoles(params SocketRole[] roles)
+        {
+            return _service.RemoveAdminRoles(Context.Guild, roles);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        public virtual Task GetAdminRoles()
+        {
+            string text = String.Empty;
+            foreach (SocketRole role in _service.GetAdminRoles(Context.Guild))
+                text += $"{role.Name}, ";
+            return ReplyAsync(text);
+        }
+
         [RequireAdminRole(Group = "Permission")]
         [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
         [RequireOwner(Group = "Permission")]

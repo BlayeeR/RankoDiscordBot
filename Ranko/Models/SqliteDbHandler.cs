@@ -224,9 +224,9 @@ namespace Ranko
         {
             await SetAdminRoles(guild.Id, roles.Select(x=>x.Id).ToArray());
         }
-        public static async Task SetAdminRoles(IGuild guild, ulong[] roles)
+        public static async Task SetAdminRoles(IGuild guild, ulong[] rolesId)
         {
-            await SetAdminRoles(guild.Id, roles);
+            await SetAdminRoles(guild.Id, rolesId);
         }
         public static async Task SetAdminRoles(ulong guildId, IRole[] roles)
         {
@@ -254,19 +254,19 @@ namespace Ranko
                 await DbContext.SaveChangesAsync();
             }
         }
-        public static async Task AddAdminRole(IGuild guild, IRole role)
+        public static async Task AddAdminRoles(IGuild guild, IRole[] roles)
         {
-            await AddAdminRole(guild.Id, role.Id);
+            await AddAdminRoles(guild.Id, roles.Select(x => x.Id).ToArray());
         }
-        public static async Task AddAdminRole(IGuild guild, ulong roleId)
+        public static async Task AddAdminRoles(IGuild guild, ulong[] rolesId)
         {
-            await AddAdminRole(guild.Id, roleId);
+            await AddAdminRoles(guild.Id, rolesId);
         }
-        public static async Task AddAdminRole(ulong guildId, IRole role)
+        public static async Task AddAdminRoles(ulong guildId, IRole[] roles)
         {
-            await AddAdminRole(guildId, role.Id);
+            await AddAdminRoles(guildId, roles.Select(x => x.Id).ToArray());
         }
-        public static async Task AddAdminRole(ulong guildId, ulong roleId)
+        public static async Task AddAdminRoles(ulong guildId, ulong[] rolesId)
         {
             using (var DbContext = new SqliteDbContext())
             {
@@ -275,27 +275,34 @@ namespace Ranko
                     CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
                 }
 
-                GuildConfigEntity guild = DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault();
-                if (guild.AdminRoles.Where(x => x.RoleId == roleId).Count() < 1)
-                    DbContext.GuildConfig.Where(x => x.GuildId == guild.GuildId).Select(x => x.AdminRoles).FirstOrDefault().Add(new AdminRoleEntity() { Guild = guild, GuildId = guild.GuildId, RoleId = roleId });
+                List<AdminRoleEntity> adminRoles = new List<AdminRoleEntity>();
+                foreach (ulong role in rolesId)
+                    adminRoles.Add(new AdminRoleEntity()
+                    {
+                        Guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault(),
+                        GuildId = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault().GuildId,
+                        RoleId = role
+                    });
+
+                DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles.AddRange(adminRoles);
                 await DbContext.SaveChangesAsync();
             }
         }
 
-        public static async Task RemoveAdminRole(IGuild guild, IRole role)
+        public static async Task RemoveAdminRoles(IGuild guild, IRole[] roles)
         {
-            await RemoveAdminRole(guild.Id, role.Id);
+            await RemoveAdminRoles(guild.Id, roles.Select(x => x.Id).ToArray());
         }
-        public static async Task RemoveAdminRole(ulong guildId, IRole role)
+        public static async Task RemoveAdminRoles(ulong guildId, IRole[] roles)
         {
-            await RemoveAdminRole(guildId, role.Id);
+            await RemoveAdminRoles(guildId, roles.Select(x => x.Id).ToArray());
         }
-        public static async Task RemoveAdminRole(IGuild guild, ulong roleId)
+        public static async Task RemoveAdminRoles(IGuild guild, ulong[] rolesId)
         {
-            await RemoveAdminRole(guild.Id, roleId);
+            await RemoveAdminRoles(guild.Id, rolesId);
         }
 
-        public static async Task RemoveAdminRole(ulong guildId, ulong roleId)
+        public static async Task RemoveAdminRoles(ulong guildId, ulong[] rolesId)
         {
             using (var DbContext = new SqliteDbContext())
             {
@@ -305,10 +312,12 @@ namespace Ranko
                     return;
                 }
 
-                GuildConfigEntity guild = DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault();
-                if (guild.AdminRoles.Where(x => x.RoleId == roleId).Count() < 1)
-                    return;
-                DbContext.GuildConfig.Where(x => x.GuildId == guild.GuildId).Select(x => x.AdminRoles).FirstOrDefault().Remove(guild.AdminRoles.Where(x=> x.RoleId == roleId).FirstOrDefault());
+                List<AdminRoleEntity> adminRoles = DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles;
+                foreach (ulong role in rolesId)
+                    adminRoles.Remove(adminRoles.Where(x => x.RoleId == role).FirstOrDefault());
+
+                //test
+                //DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles = adminRoles;
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -317,6 +326,7 @@ namespace Ranko
         {
             return GetAdminRoles(guild.Id);
         }
+
         public static List<ulong> GetAdminRoles(ulong guildId)
         {
             using (var DbContext = new SqliteDbContext())
@@ -325,7 +335,8 @@ namespace Ranko
                 {
                     CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
                 }
-                return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.AdminRoles.Select(y => y.RoleId).FirstOrDefault()).ToList();
+                List<AdminRoleEntity> admins = DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles;
+                return admins.Select(x=> x.RoleId).ToList();
             }
         }
 
