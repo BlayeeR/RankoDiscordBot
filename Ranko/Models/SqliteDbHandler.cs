@@ -122,38 +122,38 @@ namespace Ranko
             }
         }
 
-        public static uint GetDeleteAlertMessageTimespan(IGuild guild)
-        {
-            return GetDeleteAlertMessageTimespan(guild.Id);
-        }
-        public static uint GetDeleteAlertMessageTimespan(ulong guildId)//gets time interval after which alert message gets deleted(its get deleted automatically if the time is later than next ping or task end(not more than 2 weeks- discord limits)
-        {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
-                {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
-                }
-                return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.DeleteAlertMessageTimespan).FirstOrDefault(); //0=not set
-            }
-        }
+        //public static uint GetDeleteAlertMessageTimespan(IGuild guild)
+        //{
+        //    return GetDeleteAlertMessageTimespan(guild.Id);
+        //}
+        //public static uint GetDeleteAlertMessageTimespan(ulong guildId)//gets time interval after which alert message gets deleted(its get deleted automatically if the time is later than next ping or task end(not more than 2 weeks- discord limits)
+        //{
+        //    using (var DbContext = new SqliteDbContext())
+        //    {
+        //        if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+        //        {
+        //            CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+        //        }
+        //        return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.DeleteAlertMessageTimespan).FirstOrDefault(); //0=not set
+        //    }
+        //}
 
-        public static async Task SetDeleteAlertMesssageTimespan(IGuild guild, uint timespan)
-        {
-            await SetDeleteAlertMesssageTimespan(guild.Id, timespan);
-        }
-        public static async Task SetDeleteAlertMesssageTimespan(ulong guildId, uint timespan)
-        {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
-                {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
-                }
-                DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().DeleteAlertMessageTimespan = timespan;
-                await DbContext.SaveChangesAsync();
-            }
-        }
+        //public static async Task SetDeleteAlertMesssageTimespan(IGuild guild, uint timespan)
+        //{
+        //    await SetDeleteAlertMesssageTimespan(guild.Id, timespan);
+        //}
+        //public static async Task SetDeleteAlertMesssageTimespan(ulong guildId, uint timespan)
+        //{
+        //    using (var DbContext = new SqliteDbContext())
+        //    {
+        //        if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+        //        {
+        //            CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+        //        }
+        //        DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().DeleteAlertMessageTimespan = timespan;
+        //        await DbContext.SaveChangesAsync();
+        //    }
+        //}
 
         public static ushort GetDateFormat(IGuild guild)
         {
@@ -225,15 +225,15 @@ namespace Ranko
         {
             await SetAdminRoles(guild.Id, roles.Select(x=>x.Id).ToArray());
         }
-        public static async Task SetAdminRoles(IGuild guild, ulong[] rolesId)
+        public static async Task SetAdminRoles(IGuild guild, ulong[] roleIds)
         {
-            await SetAdminRoles(guild.Id, rolesId);
+            await SetAdminRoles(guild.Id, roleIds);
         }
         public static async Task SetAdminRoles(ulong guildId, IRole[] roles)
         {
             await SetAdminRoles(guildId, roles.Select(x=>x.Id).ToArray());
         }
-        public static async Task SetAdminRoles(ulong guildId, ulong[] roles)
+        public static async Task SetAdminRoles(ulong guildId, ulong[] roleIds)
         {
             using (var DbContext = new SqliteDbContext())
             {
@@ -241,17 +241,14 @@ namespace Ranko
                 {
                     CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
                 }
-
-                List<AdminRoleEntity> adminRoles = new List<AdminRoleEntity>();
-                foreach (ulong role in roles)
-                    adminRoles.Add(new AdminRoleEntity()
+                GuildConfigEntity guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault();
+                DbContext.AdminRoles.RemoveRange(guild.AdminRoles);
+                foreach (ulong role in roleIds)
+                    DbContext.AdminRoles.Add(new AdminRoleEntity()
                     {
-                        Guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault(),
-                        GuildId = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault().GuildId,
+                        GuildId = guild.GuildId,
                         RoleId = role
                     });
-
-                DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles= adminRoles;
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -259,15 +256,15 @@ namespace Ranko
         {
             await AddAdminRoles(guild.Id, roles.Select(x => x.Id).ToArray());
         }
-        public static async Task AddAdminRoles(IGuild guild, ulong[] rolesId)
+        public static async Task AddAdminRoles(IGuild guild, ulong[] roleIds)
         {
-            await AddAdminRoles(guild.Id, rolesId);
+            await AddAdminRoles(guild.Id, roleIds);
         }
         public static async Task AddAdminRoles(ulong guildId, IRole[] roles)
         {
             await AddAdminRoles(guildId, roles.Select(x => x.Id).ToArray());
         }
-        public static async Task AddAdminRoles(ulong guildId, ulong[] rolesId)
+        public static async Task AddAdminRoles(ulong guildId, ulong[] roleIds)
         {
             using (var DbContext = new SqliteDbContext())
             {
@@ -275,17 +272,12 @@ namespace Ranko
                 {
                     CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
                 }
-
-                List<AdminRoleEntity> adminRoles = new List<AdminRoleEntity>();
-                foreach (ulong role in rolesId)
-                    adminRoles.Add(new AdminRoleEntity()
+                foreach (ulong role in roleIds)
+                    DbContext.AdminRoles.Add(new AdminRoleEntity()
                     {
-                        Guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault(),
                         GuildId = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault().GuildId,
                         RoleId = role
                     });
-
-                DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles.AddRange(adminRoles);
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -298,12 +290,12 @@ namespace Ranko
         {
             await RemoveAdminRoles(guildId, roles.Select(x => x.Id).ToArray());
         }
-        public static async Task RemoveAdminRoles(IGuild guild, ulong[] rolesId)
+        public static async Task RemoveAdminRoles(IGuild guild, ulong[] roleIds)
         {
-            await RemoveAdminRoles(guild.Id, rolesId);
+            await RemoveAdminRoles(guild.Id, roleIds);
         }
 
-        public static async Task RemoveAdminRoles(ulong guildId, ulong[] rolesId)
+        public static async Task RemoveAdminRoles(ulong guildId, ulong[] roleIds)
         {
             using (var DbContext = new SqliteDbContext())
             {
@@ -312,13 +304,8 @@ namespace Ranko
                     CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
                     return;
                 }
-
-                List<AdminRoleEntity> adminRoles = DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles;
-                foreach (ulong role in rolesId)
-                    adminRoles.Remove(adminRoles.Where(x => x.RoleId == role).FirstOrDefault());
-
-                //test
-                //DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles = adminRoles;
+                GuildConfigEntity guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault();
+                DbContext.AdminRoles.RemoveRange(guild.AdminRoles.Where(x => roleIds.Any(z => z == x.RoleId)));
                 await DbContext.SaveChangesAsync();
             }
         }
@@ -360,7 +347,7 @@ namespace Ranko
                         AlertChannelId = 0,
                         AdminRoles = new List<AdminRoleEntity>(),
                         Tasks = new List<Resources.Database.TaskEntity>(),
-                        DeleteAlertMessageTimespan = 604800,
+                        //DeleteAlertMessageTimespan = 604800,
                         DateFormat = 0,
                         Language = 0
                     });

@@ -25,13 +25,15 @@ namespace Ranko.Resources.Database
                 .HasOne(p => p.Guild)
                 .WithMany(b => b.Tasks)
                 .HasForeignKey(p => p.GuildId)
-                .HasConstraintName("ForeignKey_TaskEntity_GuildConfigEntity");
+                .HasConstraintName("ForeignKey_TaskEntity_GuildConfigEntity")
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<AdminRoleEntity>()
                 .HasOne(p => p.Guild)
                 .WithMany(b => b.AdminRoles)
                 .HasForeignKey(p => p.GuildId)
-                .HasConstraintName("ForeignKey_AdminRoleEntity_GuildConfigEntity");
+                .HasConstraintName("ForeignKey_AdminRoleEntity_GuildConfigEntity")
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

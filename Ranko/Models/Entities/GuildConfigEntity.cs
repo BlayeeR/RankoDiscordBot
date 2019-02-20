@@ -15,7 +15,6 @@ namespace Ranko.Resources.Database
         public ulong CommandChannelId { get; set; }
         public ulong AlertChannelId { get; set; }
         public virtual List<AdminRoleEntity> AdminRoles { get; set; }
-        public uint DeleteAlertMessageTimespan { get; set; }
         public ushort DateFormat { get; set; }
         public ushort Language { get; set; }
         public string DefaultTimezone { get; set; }

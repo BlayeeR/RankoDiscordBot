@@ -9,8 +9,8 @@ using Ranko.Resources.Database;
 namespace Ranko.Migrations
 {
     [DbContext(typeof(SqliteDbContext))]
-    [Migration("20190220002211_dbMigration")]
-    partial class dbMigration
+    [Migration("20190220022505_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -42,8 +42,6 @@ namespace Ranko.Migrations
                     b.Property<ushort>("DateFormat");
 
                     b.Property<string>("DefaultTimezone");
-
-                    b.Property<uint>("DeleteAlertMessageTimespan");
 
                     b.Property<ushort>("Language");
 

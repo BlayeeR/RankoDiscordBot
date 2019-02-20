@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Ranko.Migrations
 {
-    public partial class dbMigration : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,6 @@ namespace Ranko.Migrations
                     GuildId = table.Column<ulong>(nullable: false),
                     CommandChannelId = table.Column<ulong>(nullable: false),
                     AlertChannelId = table.Column<ulong>(nullable: false),
-                    DeleteAlertMessageTimespan = table.Column<uint>(nullable: false),
                     DateFormat = table.Column<ushort>(nullable: false),
                     Language = table.Column<ushort>(nullable: false),
                     DefaultTimezone = table.Column<string>(nullable: true)

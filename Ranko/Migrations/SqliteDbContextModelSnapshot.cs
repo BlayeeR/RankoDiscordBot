@@ -41,8 +41,6 @@ namespace Ranko.Migrations
 
                     b.Property<string>("DefaultTimezone");
 
-                    b.Property<uint>("DeleteAlertMessageTimespan");
-
                     b.Property<ushort>("Language");
 
                     b.HasKey("GuildId");
