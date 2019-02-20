@@ -5,6 +5,7 @@ using System.Text;
 using System.Linq;
 using Discord;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ranko
 {

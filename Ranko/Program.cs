@@ -2,6 +2,8 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using Ranko.Resources.Database;
+using Microsoft.EntityFrameworkCore;
 using Ranko.Services;
 using System;
 using System.IO;
@@ -21,6 +23,16 @@ namespace Ranko
         public async Task RunBotAsync()
         {
             string botToken = "";
+            using (var context = new SqliteDbContext())
+            {
+
+                // Migrate the database
+                //await context.Database.EnsureCreatedAsync();
+                await context.Database.MigrateAsync();
+
+                //... the remaining code
+
+            }
             _client = new DiscordSocketClient();
             _commands = new CommandService();
             _remindMeService = new RemindMeService(_client);

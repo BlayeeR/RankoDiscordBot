@@ -12,7 +12,7 @@ namespace Ranko.Resources.Database
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public ulong RoleId { get; set; }
-        public GuildConfigEntity Guild { get; set; }
+        public virtual GuildConfigEntity Guild { get; set; }
         public ulong GuildId { get; set; }
     }
 }

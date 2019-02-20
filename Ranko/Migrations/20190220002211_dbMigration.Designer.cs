@@ -9,14 +9,14 @@ using Ranko.Resources.Database;
 namespace Ranko.Migrations
 {
     [DbContext(typeof(SqliteDbContext))]
-    [Migration("20181105151547_SqliteMigration")]
-    partial class SqliteMigration
+    [Migration("20190220002211_dbMigration")]
+    partial class dbMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.3-rtm-32065");
+                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034");
 
             modelBuilder.Entity("Ranko.Resources.Database.AdminRoleEntity", b =>
                 {
@@ -28,7 +28,7 @@ namespace Ranko.Migrations
 
                     b.HasIndex("GuildId");
 
-                    b.ToTable("AdminRoleEntity");
+                    b.ToTable("AdminRoles");
                 });
 
             modelBuilder.Entity("Ranko.Resources.Database.GuildConfigEntity", b =>

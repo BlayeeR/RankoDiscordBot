@@ -16,7 +16,7 @@ namespace Ranko.Resources.Database
         {
             string DbLocation = Assembly.GetEntryAssembly().Location.Replace(@"bin\Debug\netcoreapp2.1", @"Data\");
             Options.UseSqlite($"Data Source=Data\\Database.sqlite");
-            
+            Options.UseLazyLoadingProxies();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

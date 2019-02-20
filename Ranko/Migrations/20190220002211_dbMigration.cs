@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Ranko.Migrations
 {
-    public partial class SqliteMigration : Migration
+    public partial class dbMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -25,7 +25,7 @@ namespace Ranko.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AdminRoleEntity",
+                name: "AdminRoles",
                 columns: table => new
                 {
                     RoleId = table.Column<ulong>(nullable: false),
@@ -33,7 +33,7 @@ namespace Ranko.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AdminRoleEntity", x => x.RoleId);
+                    table.PrimaryKey("PK_AdminRoles", x => x.RoleId);
                     table.ForeignKey(
                         name: "ForeignKey_AdminRoleEntity_GuildConfigEntity",
                         column: x => x.GuildId,
@@ -69,8 +69,8 @@ namespace Ranko.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AdminRoleEntity_GuildId",
-                table: "AdminRoleEntity",
+                name: "IX_AdminRoles_GuildId",
+                table: "AdminRoles",
                 column: "GuildId");
 
             migrationBuilder.CreateIndex(
@@ -82,7 +82,7 @@ namespace Ranko.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AdminRoleEntity");
+                name: "AdminRoles");
 
             migrationBuilder.DropTable(
                 name: "Tasks");

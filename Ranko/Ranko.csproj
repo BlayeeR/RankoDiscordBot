@@ -10,11 +10,13 @@
     <Compile Remove="Migrations\20180918163741_Migration.cs" />
     <Compile Remove="Migrations\20181102150442_add-migraion Migraton.cs" />
     <Compile Remove="Migrations\20181105150718_Migration.cs" />
+    <Compile Remove="Migrations\20181105151547_SqliteMigration.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Design" Version="1.1.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.2">
@@ -25,7 +27,7 @@
 
   <ItemGroup>
     <None Update="Data\Database.sqlite">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

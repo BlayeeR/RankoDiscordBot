@@ -13,7 +13,7 @@ namespace Ranko.Resources.Database
         public ulong TaskId{ get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public GuildConfigEntity Guild { get; set; }
+        public virtual GuildConfigEntity Guild { get; set; }
         public ulong GuildId { get; set; }
         public ulong AssignedUserId { get; set; }
         public DateTime LastAlertDate { get; set; }
