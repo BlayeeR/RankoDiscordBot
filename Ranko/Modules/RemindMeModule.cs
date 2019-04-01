@@ -6,6 +6,7 @@ using Ranko.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ranko.Modules
@@ -45,18 +46,56 @@ namespace Ranko.Modules
         [RequireOwner(Group = "Permission")]
         public virtual Task GetAdminRoles()
         {
-            string text = String.Empty;
-            foreach (SocketRole role in _service.GetAdminRoles(Context.Guild))
-                text += $"{role.Name}, ";
-            return ReplyAsync(text);
+            return ReplyAsync($"Current administrator roles: {String.Join(", ", _service.GetAdminRoles(Context.Guild).Select(x => x.Name))}");
         }
 
-        [RequireAdminRole(Group = "Permission")]
         [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
         [RequireOwner(Group = "Permission")]
-        public virtual Task Test()
+        [RequireAdminRole(Group = "Permission")]
+        public virtual Task SetAlertChannel(SocketTextChannel channel)
         {
-            return _service.Test();
+            return _service.SetAlertChannel(Context.Guild, channel);
         }
+
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        [RequireAdminRole(Group = "Permission")]
+        public virtual Task SetAlertChannel()
+        {
+            return _service.SetAlertChannel(Context.Guild, Context.Channel);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        [RequireAdminRole(Group = "Permission")]
+        public virtual Task GetAlertChannel()
+        {
+            return ReplyAsync($"Current channel for alerts: <#{_service.GetAlertChannel(Context.Guild).Id}>");
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        [RequireAdminRole(Group = "Permission")]
+        public virtual Task SetCommandChannel(SocketTextChannel channel)
+        {
+            return _service.SetCommandChannel(Context.Guild, channel);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        [RequireAdminRole(Group = "Permission")]
+        public virtual Task SetCommandChannel()
+        {
+            return _service.SetCommandChannel(Context.Guild, Context.Channel);
+        }
+
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Permission")]
+        [RequireOwner(Group = "Permission")]
+        [RequireAdminRole(Group = "Permission")]
+        public virtual Task GetCommandChannel()
+        {
+            return ReplyAsync($"Current channel for commands: <#{_service.GetCommandChannel(Context.Guild).Id}>");
+        }
+
     }
 }

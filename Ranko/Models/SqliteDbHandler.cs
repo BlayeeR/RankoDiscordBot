@@ -328,10 +328,11 @@ namespace Ranko
             }
         }
 
-        private static async Task CreateDefaultGuildConfig(IGuild guild)
+        public static async Task CreateDefaultGuildConfig(IGuild guild)
         {
             await CreateDefaultGuildConfig(guild.Id);
         }
+
         private static async Task CreateDefaultGuildConfig(ulong guildId)//creates default guild config
         {
             using (var DbContext = new SqliteDbContext())

@@ -62,14 +62,14 @@ namespace Ranko.Services
 
         private async Task JoinedGuild(SocketGuild guild)
         {
-            SqliteDbHandler.GetLanguageId(guild);
-            //await guild.DefaultChannel.SendMessageAsync("test");
+            await SqliteDbHandler.CreateDefaultGuildConfig(guild);
         }
 
         private async Task LeftGuild(SocketGuild guild)
         {
             await SqliteDbHandler.DeleteGuildConfig(guild);
         }
+
         private void ReminderLoop(Object stateInfo)
         {
             //tasks = SqliteDbHandler.GetAllTasks();
@@ -133,11 +133,6 @@ namespace Ranko.Services
             //});
         }
 
-        internal async Task SetAlertChannel(IGuild guild, IMessageChannel channel)
-        {
-            await SqliteDbHandler.SetAlertChannelId(guild, channel);
-        }
-
         internal async Task SetAdminRoles(IGuild guild, IRole[] roles)
         {
             await SqliteDbHandler.SetAdminRoles(guild, roles);
@@ -161,9 +156,27 @@ namespace Ranko.Services
             return roles;
         }
 
-        internal async Task Test()
+        internal async Task SetAlertChannel(IGuild guild, IMessageChannel channel)
         {
-            
+            await SqliteDbHandler.SetAlertChannelId(guild, channel);
+        }
+
+        internal IMessageChannel GetAlertChannel(IGuild guild)
+        {
+            SocketTextChannel channel = guild.GetChannelAsync(SqliteDbHandler.GetAlertChannelId(guild)).GetAwaiter().GetResult() as SocketTextChannel;
+            return channel != null? channel : GetCommandChannel(guild);
+            //return guild.GetDefaultChannelAsync().GetAwaiter().GetResult() as SocketChannel;
+        }
+
+        internal async Task SetCommandChannel(IGuild guild, IMessageChannel channel)
+        {
+            await SqliteDbHandler.SetCommandChannelId(guild, channel);
+        }
+
+        internal IMessageChannel GetCommandChannel(IGuild guild)
+        {
+            SocketTextChannel channel = guild.GetChannelAsync(SqliteDbHandler.GetCommandChannelId(guild)).GetAwaiter().GetResult() as SocketTextChannel;
+            return channel!=null?channel:guild.GetDefaultChannelAsync().GetAwaiter().GetResult();
         }
 
         /*
