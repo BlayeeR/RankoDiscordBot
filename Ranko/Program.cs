@@ -33,7 +33,7 @@ namespace Ranko
                 //... the remaining code
 
             }
-            _client = new DiscordSocketClient();
+            _client = new DiscordSocketClient(new DiscordSocketConfig() { MessageCacheSize=20});
             _commands = new CommandService();
             _remindMeService = new RemindMeService(_client);
             _services = new ServiceCollection()
@@ -41,7 +41,7 @@ namespace Ranko
                 .AddSingleton(_commands)
                 .AddSingleton(_remindMeService)
                 .BuildServiceProvider();
-
+            
             _client.Log += Log;
             _client.Ready += Ready;
 

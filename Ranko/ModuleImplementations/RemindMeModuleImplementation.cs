@@ -99,5 +99,12 @@ namespace Ranko.ModuleImplementations
             return base.GetCommandChannel();
         }
 
+        [Command("addtask", RunMode = RunMode.Async)]
+        public override Task AddTask(SocketUser user)
+        {
+            return base.AddTask(user);
+        }
+
+
     }
 }

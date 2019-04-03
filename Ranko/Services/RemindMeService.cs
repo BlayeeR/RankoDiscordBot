@@ -179,6 +179,11 @@ namespace Ranko.Services
             return channel!=null?channel:guild.GetDefaultChannelAsync().GetAwaiter().GetResult();
         }
 
+        internal async Task AddTask(IGuild guild, IUser assignedUser, string name, string description, DateTime deadline)
+        {
+            await SqliteDbHandler.CreateTask(guild.Id, assignedUser.Id, name, description, DateTime.Now, deadline);
+        }
+
         /*
 
         private static void ReminderLoop(Object stateInfo, IGuild guild)

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using Discord.WebSocket;
+using Microsoft.Data.Sqlite;
 
 namespace Ranko.Preconditions
 {
@@ -21,10 +22,19 @@ namespace Ranko.Preconditions
             {
                 //if (CheckAllowCommands(service, context))
                 //{
-
-                return SqliteDbHandler.GetAdminRoles(context.Guild).Any(x => ((SocketGuildUser)context.User).Roles.Select(y=>y.Id).Contains(x))
-                    ? Task.FromResult(PreconditionResult.FromSuccess())
-                    : Task.FromResult(PreconditionResult.FromError("This command can only be used by user with admin role."));
+                try
+                {
+                    if (SqliteDbHandler.GetAdminRoles(context.Guild).Any(x => ((SocketGuildUser)context.User).Roles.Select(y => y.Id).Contains(x)))
+                        return Task.FromResult(PreconditionResult.FromSuccess());
+                    else if(new RequireOwnerAttribute().CheckPermissionsAsync(context, command, map).GetAwaiter().GetResult().IsSuccess || new RequireUserPermissionAttribute(GuildPermission.Administrator).CheckPermissionsAsync(context, command, map).GetAwaiter().GetResult().IsSuccess)
+                        return Task.FromResult(PreconditionResult.FromSuccess());
+                    return Task.FromResult(PreconditionResult.FromError("This command can only be used by user with admin role, server administrator or bot owner."));
+                }
+                catch (SqliteException e)
+                {
+                    context.Message.AddReactionAsync(new Emoji("❌"));
+                    return Task.FromResult(PreconditionResult.FromError(e.Message));
+                }
                 //}
                 //return Task.FromResult(PreconditionResult.FromError("Managing music via commands is disabled in this guild."));
             }

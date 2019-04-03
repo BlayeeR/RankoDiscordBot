@@ -18,26 +18,38 @@ namespace Ranko
         }
         public static async Task RemoveGuildConfig(ulong guildId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
             {
-                DbContext.GuildConfig.Remove(DbContext.GuildConfig.Where(x => x.GuildId == guildId).First());
-                await DbContext.SaveChangesAsync();
+                using (var DbContext = new SqliteDbContext())
+                {
+                    DbContext.GuildConfig.Remove(DbContext.GuildConfig.Where(x => x.GuildId == guildId).First());
+                    await DbContext.SaveChangesAsync();
+                }
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
-
         public static List<Resources.Database.TaskEntity> GetTasks(IGuild guild)
         {
             return GetTasks(guild.Id);
         }
         public static List<Resources.Database.TaskEntity> GetTasks(ulong guildId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
             {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    return DbContext.Tasks.Where(x => x.GuildId == guildId).ToList();
                 }
-                return DbContext.Tasks.Where(x => x.GuildId == guildId).ToList();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
         public static ulong GetCommandChannelId(IGuild guild)
@@ -46,14 +58,19 @@ namespace Ranko
         }
         public static ulong GetCommandChannelId(ulong guildId)//gets channel in specified guild where you can use bot commands, 0=any
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
-                }
-                return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.CommandChannelId).FirstOrDefault();//0=not set
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.CommandChannelId).FirstOrDefault();//0=not set
 
+                }
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -71,14 +88,19 @@ namespace Ranko
         }
         public static async Task SetCommandChannelId(ulong guildId, ulong commandChannelId)
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().CommandChannelId = commandChannelId;
+                    await DbContext.SaveChangesAsync();
                 }
-                DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().CommandChannelId = commandChannelId;
-                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -88,13 +110,18 @@ namespace Ranko
         }
         public static ulong GetAlertChannelId(ulong guildId)//gets channel in specified where bot alerts users 
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.AlertChannelId).FirstOrDefault(); //0=not set
                 }
-                return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.AlertChannelId).FirstOrDefault(); //0=not set
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
         public static async Task SetAlertChannelId(IGuild guild, IMessageChannel alertChannel)
@@ -111,49 +138,21 @@ namespace Ranko
         }
         public static async Task SetAlertChannelId(ulong guildId, ulong alertChannelId)
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AlertChannelId = alertChannelId;
+                    await DbContext.SaveChangesAsync();
                 }
-                DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AlertChannelId = alertChannelId;
-                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
-
-        //public static uint GetDeleteAlertMessageTimespan(IGuild guild)
-        //{
-        //    return GetDeleteAlertMessageTimespan(guild.Id);
-        //}
-        //public static uint GetDeleteAlertMessageTimespan(ulong guildId)//gets time interval after which alert message gets deleted(its get deleted automatically if the time is later than next ping or task end(not more than 2 weeks- discord limits)
-        //{
-        //    using (var DbContext = new SqliteDbContext())
-        //    {
-        //        if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
-        //        {
-        //            CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
-        //        }
-        //        return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.DeleteAlertMessageTimespan).FirstOrDefault(); //0=not set
-        //    }
-        //}
-
-        //public static async Task SetDeleteAlertMesssageTimespan(IGuild guild, uint timespan)
-        //{
-        //    await SetDeleteAlertMesssageTimespan(guild.Id, timespan);
-        //}
-        //public static async Task SetDeleteAlertMesssageTimespan(ulong guildId, uint timespan)
-        //{
-        //    using (var DbContext = new SqliteDbContext())
-        //    {
-        //        if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
-        //        {
-        //            CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
-        //        }
-        //        DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().DeleteAlertMessageTimespan = timespan;
-        //        await DbContext.SaveChangesAsync();
-        //    }
-        //}
 
         public static ushort GetDateFormat(IGuild guild)
         {
@@ -161,13 +160,18 @@ namespace Ranko
         }
         public static ushort GetDateFormat(ulong guildId)
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.DateFormat).FirstOrDefault(); //0=int
                 }
-                return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.DateFormat).FirstOrDefault(); //0=int
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -177,14 +181,19 @@ namespace Ranko
         }
         public static async Task SetDateFormat(ulong guildId, ushort dateFormatId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
             {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().DateFormat = dateFormatId;
+                    await DbContext.SaveChangesAsync();
                 }
-                DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().DateFormat = dateFormatId;
-                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -194,13 +203,18 @@ namespace Ranko
         }
         public static ushort GetLanguageId(ulong guildId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
             {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.Language).FirstOrDefault(); //0=int
                 }
-                return DbContext.GuildConfig.Where(x => x.GuildId == guildId).Select(x => x.Language).FirstOrDefault(); //0=int
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -210,14 +224,19 @@ namespace Ranko
         }
         public static async Task SetLanguageId(ulong guildId, ushort languageId)
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().Language = languageId;
+                    await DbContext.SaveChangesAsync();
                 }
-                DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().Language = languageId;
-                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -235,21 +254,26 @@ namespace Ranko
         }
         public static async Task SetAdminRoles(ulong guildId, ulong[] roleIds)
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    GuildConfigEntity guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault();
+                    DbContext.AdminRoles.RemoveRange(guild.AdminRoles);
+                    foreach (ulong role in roleIds)
+                        DbContext.AdminRoles.Add(new AdminRoleEntity()
+                        {
+                            GuildId = guild.GuildId,
+                            RoleId = role
+                        });
+                    await DbContext.SaveChangesAsync();
                 }
-                GuildConfigEntity guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault();
-                DbContext.AdminRoles.RemoveRange(guild.AdminRoles);
-                foreach (ulong role in roleIds)
-                    DbContext.AdminRoles.Add(new AdminRoleEntity()
-                    {
-                        GuildId = guild.GuildId,
-                        RoleId = role
-                    });
-                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
         public static async Task AddAdminRoles(IGuild guild, IRole[] roles)
@@ -266,19 +290,24 @@ namespace Ranko
         }
         public static async Task AddAdminRoles(ulong guildId, ulong[] roleIds)
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    foreach (ulong role in roleIds)
+                        DbContext.AdminRoles.Add(new AdminRoleEntity()
+                        {
+                            GuildId = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault().GuildId,
+                            RoleId = role
+                        });
+                    await DbContext.SaveChangesAsync();
                 }
-                foreach (ulong role in roleIds)
-                    DbContext.AdminRoles.Add(new AdminRoleEntity()
-                    {
-                        GuildId = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault().GuildId,
-                        RoleId = role
-                    });
-                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -297,16 +326,24 @@ namespace Ranko
 
         public static async Task RemoveAdminRoles(ulong guildId, ulong[] roleIds)
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
-                    return;
+                    if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+                    {
+                        CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                        return;
+                    }
+                    GuildConfigEntity guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault();
+                    DbContext.AdminRoles.RemoveRange(guild.AdminRoles.Where(x => roleIds.Any(z => z == x.RoleId)));
+                    await DbContext.SaveChangesAsync();
                 }
-                GuildConfigEntity guild = DbContext.GuildConfig.Where(y => y.GuildId == guildId).FirstOrDefault();
-                DbContext.AdminRoles.RemoveRange(guild.AdminRoles.Where(x => roleIds.Any(z => z == x.RoleId)));
-                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -317,74 +354,105 @@ namespace Ranko
 
         public static List<ulong> GetAdminRoles(ulong guildId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
             {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+                using (var DbContext = new SqliteDbContext())
                 {
-                    CreateDefaultGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    CreateGuildConfig(guildId).GetAwaiter().GetResult();//guild config not found
+                    List<AdminRoleEntity> admins = DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles;
+                    return admins.Select(x => x.RoleId).ToList();
                 }
-                List<AdminRoleEntity> admins = DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault().AdminRoles;
-                return admins.Select(x=> x.RoleId).ToList();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
         public static async Task CreateDefaultGuildConfig(IGuild guild)
         {
-            await CreateDefaultGuildConfig(guild.Id);
+            await CreateGuildConfig(guild.Id);
         }
 
-        private static async Task CreateDefaultGuildConfig(ulong guildId)//creates default guild config
+        private static async Task CreateGuildConfig(ulong guildId)//creates default guild config
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() >= 1)
-                    return;
-                else
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    DbContext.GuildConfig.Add(new GuildConfigEntity
+                    if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() >= 1)
+                        return;
+                    else
                     {
-                        GuildId = guildId,
-                        CommandChannelId = 0,
-                        AlertChannelId = 0,
-                        AdminRoles = new List<AdminRoleEntity>(),
-                        Tasks = new List<Resources.Database.TaskEntity>(),
-                        //DeleteAlertMessageTimespan = 604800,
-                        DateFormat = 0,
-                        Language = 0
-                    });
+                        DbContext.GuildConfig.Add(new GuildConfigEntity
+                        {
+                            GuildId = guildId,
+                            CommandChannelId = 0,
+                            AlertChannelId = 0,
+                            AdminRoles = new List<AdminRoleEntity>(),
+                            Tasks = new List<Resources.Database.TaskEntity>(),
+                            //DeleteAlertMessageTimespan = 604800,
+                            DateFormat = 0,
+                            Language = 0
+                        });
+                    }
+                    await DbContext.SaveChangesAsync();
                 }
-                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
-        public static async Task CreateTask(ulong guildId, ulong userId, DateTime lastAlert, DateTime deadline)//TODO:ALERTINTERVAL 
+        public static async Task CreateTask(ulong guildId, ulong userId, string name, string description, DateTime lastAlertDate, DateTime deadline)//TODO:ALERTINTERVAL 
         {
-            using (var DbContext = new SqliteDbContext())
-            {
-                DbContext.Tasks.Add(new Resources.Database.TaskEntity()
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
                 {
-                    GuildId = guildId,
-                    AssignedUserId = userId,
-                    LastAlertDate = lastAlert,
-                    DeadlineDate = deadline
-                });
-                await DbContext.SaveChangesAsync();
+                    DbContext.Tasks.Add(new Resources.Database.TaskEntity()
+                    {
+                        GuildId = guildId,
+                        AssignedUserId = userId,
+                        Name = name,
+                        Description = description,
+                        LastAlertDate = lastAlertDate,
+                        DeadlineDate = deadline
+                    });
+                    await DbContext.SaveChangesAsync();
+                }
+            }
+            catch
+            {
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
         public static async Task CreateTask(Resources.Database.TaskEntity task)
         {
-            await CreateTask(task.GuildId, task.AssignedUserId, task.LastAlertDate, task.DeadlineDate);
+            await CreateTask(task.GuildId, task.AssignedUserId, task.Name, task.Description, task.LastAlertDate, task.DeadlineDate);
         }
 
         public static async Task RemoveTask(ulong taskId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
+                        return;
+                    DbContext.Tasks.Remove(DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault());
+                    await DbContext.SaveChangesAsync();
+                }
+            }
+            catch
             {
-                if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
-                    return;
-                DbContext.Tasks.Remove(DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault());
-                await DbContext.SaveChangesAsync();
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -400,26 +468,41 @@ namespace Ranko
         }
         public static ulong GetAssignedUserId(ulong taskId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
+                        return 0;
+                    else
+                        return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().AssignedUserId;
+                }
+            }
+            catch
             {
-                if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
-                    return 0;
-                else
-                    return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().AssignedUserId;
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
         public static List<Resources.Database.TaskEntity> GetUserTasks(IUser user)
         {
             return GetUserTasks(user.Id);
-
         }
 
         public static List<Resources.Database.TaskEntity> GetUserTasks(ulong userId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    return DbContext.Tasks.Where(x => x.AssignedUserId == userId).ToList();
+                }
+            }
+            catch
             {
-                return DbContext.Tasks.Where(x => x.AssignedUserId == userId).ToList();
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -429,12 +512,20 @@ namespace Ranko
         }
         public static DateTime GetDeadline(ulong taskId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
+                        return DateTime.MinValue;//alert doesnt exists 
+                    else
+                        return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().DeadlineDate;
+                }
+            }
+            catch
             {
-                if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
-                    return DateTime.MinValue;//alert doesnt exists 
-                else
-                    return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().DeadlineDate;
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -444,12 +535,20 @@ namespace Ranko
         }
         public static DateTime GetLastAlertDate(ulong taskId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
+                        return DateTime.MinValue;//alert doesnt exists 
+                    else
+                        return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().LastAlertDate;
+                }
+            }
+            catch
             {
-                if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
-                    return DateTime.MinValue;//alert doesnt exists 
-                else
-                    return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().LastAlertDate;
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -459,12 +558,20 @@ namespace Ranko
         }
         public static async Task SetLastAlertDate(ulong taskId, DateTime lastAlert)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
+                        return;
+                    DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().LastAlertDate = lastAlert;
+                    await DbContext.SaveChangesAsync();
+                }
+            }
+            catch
             {
-                if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
-                    return;
-                DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().LastAlertDate = lastAlert;
-                await DbContext.SaveChangesAsync();
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -475,12 +582,20 @@ namespace Ranko
 
         public static ulong GetGuildId(ulong taskId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
+                        return 0;
+                    else
+                        return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().GuildId;
+                }
+            }
+            catch
             {
-                if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
-                    return 0;
-                else
-                    return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().GuildId;
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
         public static bool IsCompleted(Resources.Database.TaskEntity task)
@@ -508,14 +623,20 @@ namespace Ranko
         }
         public static uint GetCompletionStatus(ulong taskId)
         {
-            if (!IsCompleted(taskId))
-                return 0;
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
+                        return 0;
+                    else
+                        return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().CompletionStatus;
+                }
+            }
+            catch
             {
-                if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
-                    return 0;
-                else
-                    return DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().CompletionStatus;
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
         public static async Task SetCompletionStatus(Resources.Database.TaskEntity task, uint completionStatus)
@@ -524,19 +645,35 @@ namespace Ranko
         }
         public static async Task SetCompletionStatus(ulong taskId, uint completionStatus)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
+                        return;
+                    DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().CompletionStatus = completionStatus;
+                    await DbContext.SaveChangesAsync();
+                }
+            }
+            catch
             {
-                if (DbContext.Tasks.Where(x => x.TaskId == taskId).Count() < 1)
-                    return;
-                DbContext.Tasks.Where(x => x.TaskId == taskId).FirstOrDefault().CompletionStatus = completionStatus;
-                await DbContext.SaveChangesAsync();
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
         public static List<Resources.Database.TaskEntity> GetAllTasks()
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    return DbContext.Tasks.ToList();
+                }
+            }
+            catch
             {
-                return DbContext.Tasks.ToList();
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
 
@@ -547,19 +684,35 @@ namespace Ranko
 
         public static async Task DeleteGuildConfig(ulong guildId)
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
+                        return;
+                    DbContext.GuildConfig.Remove(DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault());
+                    await DbContext.SaveChangesAsync();
+                }
+            }
+            catch
             {
-                if (DbContext.GuildConfig.Where(x => x.GuildId == guildId).Count() < 1)
-                    return;
-                DbContext.GuildConfig.Remove(DbContext.GuildConfig.Where(x => x.GuildId == guildId).FirstOrDefault());
-                await DbContext.SaveChangesAsync();
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
         public static List<GuildConfigEntity> GetAllGuilds()
         {
-            using (var DbContext = new SqliteDbContext())
+            try
+            { 
+                using (var DbContext = new SqliteDbContext())
+                {
+                    return DbContext.GuildConfig.ToList();
+                }
+            }
+            catch
             {
-                return DbContext.GuildConfig.ToList();
+                //TODO: Log exception, more specified description
+                throw;
             }
         }
     }
