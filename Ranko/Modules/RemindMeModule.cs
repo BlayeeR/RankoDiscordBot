@@ -182,15 +182,21 @@ namespace Ranko.Modules
             DateTime deadline;
             Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, SocketReaction, Task> addedReactionHandler = null;
             Func<SocketMessage, Task> receivedMessageHandler = null;
+            //fired on received message
             receivedMessageHandler = (m) =>
             {
+                //check if response is from the same user as in command
                 if (m.Author == Context.Message.Author)
                 {
+                    //so this part checks string variables and determines stage in which command already is
+                    //first stage name is not set so this user input will be used as name
                     if (String.IsNullOrEmpty(name))
                     {
                         name = m.Content;
+                        //treat previous message   
                         message.RemoveAllReactionsAsync();
                         message.ModifyAsync(msg => msg.Embed = message.Embeds.FirstOrDefault().ToEmbedBuilder().WithColor(Color.Green).Build());
+                        //prepare next message
                         embed = new EmbedBuilder()
                         {
                             Title = "Enter description of the task:"
@@ -199,6 +205,7 @@ namespace Ranko.Modules
                         message = ReplyAsync(embed: embed).GetAwaiter().GetResult();
                         message.AddReactionsAsync(new Emoji[] { new Emoji("🔙"), new Emoji("❌") });
                     }
+                    //second stage- description setup
                     else if (String.IsNullOrEmpty(description))
                     {
                         description = m.Content;
@@ -212,22 +219,27 @@ namespace Ranko.Modules
                         message = ReplyAsync(embed: embed).GetAwaiter().GetResult();
                         message.AddReactionsAsync(new Emoji[] { new Emoji("🔙"), new Emoji("❌") });
                     }
+                    //last stage- deadline setup
                     else
                     {
+                        //try to parse message from user input
                         if (DateTime.TryParse(m.Content, out deadline))
                         {
                             message.RemoveAllReactionsAsync();
                             message.ModifyAsync(msg => msg.Embed = message.Embeds.FirstOrDefault().ToEmbedBuilder().WithColor(Color.Green).Build());
                             try
                             { 
-                                _service.AddTask(Context.Guild, Context.User, name, description, deadline).GetAwaiter().GetResult();
+                                //try add task to database
+                                _service.AddTask(Context.Guild, user, name, description, deadline).GetAwaiter().GetResult();
                             }
                             catch (SqliteException e)
                             {
+                                //unsuccessfull attempt, somethings wrong with database
                                 Context.Message.AddReactionAsync(new Emoji("❌"));
                                 UnsubscribeEvent(Context.Client, addedReactionHandler, receivedMessageHandler);
                                 return Task.FromException(e);
                             }
+                            //prepare final message
                             embed = new EmbedBuilder()
                             {
                                 Title = name,
@@ -237,6 +249,7 @@ namespace Ranko.Modules
                             .WithColor(Color.Green)
                             .Build();
                             message = ReplyAsync(embed: embed).GetAwaiter().GetResult();
+                            //release handlers because command is completed
                             UnsubscribeEvent(Context.Client, addedReactionHandler, receivedMessageHandler);
                         }
                         else
@@ -257,18 +270,24 @@ namespace Ranko.Modules
                 }
                 return Task.CompletedTask;
             };
+            //fired when someone adds reaction
             addedReactionHandler = (m, c, r) =>
             {
+                //check message and user 
                 if (m.HasValue && r.User.IsSpecified)
                 {
+                    //check if reaction is from user who executes command
                     if (m.Value.Id == message.Id && r.User.Value.Id == Context.Message.Author.Id)
                     {
+                        //user canceled command execution
                         if (r.Emote.Name.Equals(new Emoji("❌").Name))
                         {
                             message.RemoveAllReactionsAsync();
                             message.ModifyAsync(msg => msg.Embed = message.Embeds.FirstOrDefault().ToEmbedBuilder().WithColor(Color.DarkRed).Build());
+                            //release handlers
                             UnsubscribeEvent(Context.Client, addedReactionHandler, receivedMessageHandler);
                         }
+                        //user wants to go back
                         else if (r.Emote.Name.Equals(new Emoji("🔙").Name))
                         {
                             message.RemoveAllReactionsAsync();
@@ -305,6 +324,7 @@ namespace Ranko.Modules
             };
             Context.Client.ReactionAdded += addedReactionHandler;
             Context.Client.MessageReceived += receivedMessageHandler;
+            //timer so the command wont be executed infinitely in case of no user input
             new Timer(x => UnsubscribeEvent(Context.Client, addedReactionHandler, receivedMessageHandler), null, 90000, Timeout.Infinite);
         }
 

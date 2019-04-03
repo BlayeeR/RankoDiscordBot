@@ -37,20 +37,26 @@ namespace Ranko.Services
             tasks = SqliteDbHandler.GetAllTasks();
 
             //check if there are some old underway tasks in database, process them
-            tasks.Where(x => x.DeadlineDate.CompareTo(DateTime.Now) <= 0).Where(x => x.CompletionStatus == 0).ToList().ForEach(x => //compare deadline time to current date of undergoing tasks
-            {//deadline is over, task uncompleted
-                SqliteDbHandler.SetCompletionStatus(x, 2).GetAwaiter().GetResult();
-                IGuild guild = Client.GetGuild(x.GuildId);
+            //TODO: optimalization- pull every guild and user once from databse instead of doing it in every iteration
+            List<TaskEntity> uncompletedTasks = tasks.Where(x => x.DeadlineDate.CompareTo(DateTime.Now) <= 0).Where(x => x.CompletionStatus == 0).ToList();//deadline is over, task uncompleted
+            uncompletedTasks.Select(x => new { x.GuildId, x.AssignedUserId }).Distinct().ToList().ForEach(y => {
+                IGuild guild = Client.GetGuild(y.GuildId);
                 if (guild != null)
                 {
-                    ITextChannel channel = (ITextChannel)guild.GetChannelAsync(x.Guild.AlertChannelId);
-                    if (channel != null)
+                    SocketUser user = Client.GetUser(y.AssignedUserId);
+                    if (user != null)
                     {
-                        IGuildUser user = (IGuildUser)guild.GetUserAsync(x.AssignedUserId);
-                        if (user != null)
-                        {
-                            channel.SendMessageAsync($"Task \"{x.Name}: {x.Description}\" assigned to {user.Mention} was not completed on time({x.DeadlineDate.Date}).");
-                        }
+                        EmbedBuilder builder = new EmbedBuilder();
+                        uncompletedTasks.Where(x => x.AssignedUserId == user.Id && x.GuildId == guild.Id).ToList().ForEach(z => {
+                            SqliteDbHandler.SetCompletionStatus(z, 2).GetAwaiter().GetResult();
+                            builder.AddField(new EmbedFieldBuilder()
+                            {
+                                Name = z.Name,
+                                Value = $"{z.Description}\nDue to {z.DeadlineDate.Date.ToString("d")}\n"
+                            });
+                        });
+                        builder.Color = Color.DarkRed;
+                        GetAlertChannel(guild).SendMessageAsync($"{user.Mention} your tasks weren't completed on time:", embed: builder.Build());
                     }
                 }
             });
